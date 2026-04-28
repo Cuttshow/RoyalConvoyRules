@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Royal Convoy — The Rules of Engagement</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --parchment: #F5EDD6;
+    --parchment-dark: #E8D8B0;
+    --parchment-mid: #EFE4C4;
+    --ink: #2C1A06;
+    --ink-light: #5C3D0A;
+    --ink-mid: #3D2408;
+    --gold: #C8A030;
+    --gold-light: #E8C850;
+    --gold-deep: #8A6010;
+    --red: #8A1A1A;
+    --blue: #1A3A6A;
+    --stone: #7A7060;
+    --border: #A07820;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #3A2808;
+    font-family: 'Crimson Text', Georgia, serif;
+    color: var(--ink);
+    min-height: 100vh;
+    padding: 40px 20px;
+    background-image:
+      radial-gradient(ellipse at 20% 50%, rgba(90,50,10,0.4) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 20%, rgba(60,30,5,0.5) 0%, transparent 50%);
+  }
+
+  .booklet {
+    max-width: 780px;
+    margin: 0 auto;
+    background: var(--parchment);
+    border: 3px solid var(--gold-deep);
+    box-shadow:
+      0 0 0 1px #5C3D0A,
+      0 0 40px rgba(0,0,0,0.6),
+      inset 0 0 80px rgba(200,160,48,0.08);
+    position: relative;
+  }
+
+  /* Parchment texture overlay */
+  .booklet::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.6;
+  }
+
+  /* Corner ornaments */
+  .corner {
+    position: absolute;
+    width: 48px;
+    height: 48px;
+    z-index: 2;
+  }
+  .corner svg { width: 100%; height: 100%; }
+  .corner.tl { top: 6px; left: 6px; }
+  .corner.tr { top: 6px; right: 6px; transform: scaleX(-1); }
+  .corner.bl { bottom: 6px; left: 6px; transform: scaleY(-1); }
+  .corner.br { bottom: 6px; right: 6px; transform: scale(-1); }
+
+  .content {
+    position: relative;
+    z-index: 1;
+    padding: 60px 64px;
+  }
+
+  /* ── COVER ── */
+  .cover {
+    text-align: center;
+    padding: 48px 0 40px;
+    border-bottom: 2px solid var(--gold-deep);
+    margin-bottom: 48px;
+    position: relative;
+  }
+
+  .cover::after {
+    content: '✦ ✦ ✦';
+    display: block;
+    color: var(--gold);
+    font-size: 14px;
+    letter-spacing: 8px;
+    margin-top: 24px;
+  }
+
+  .cover-crest {
+    font-size: 52px;
+    margin-bottom: 16px;
+    display: block;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+  }
+
+  .title {
+    font-family: 'Cinzel', serif;
+    font-size: 42px;
+    font-weight: 900;
+    color: var(--ink-mid);
+    letter-spacing: 3px;
+    line-height: 1.1;
+    text-shadow: 1px 1px 0 rgba(200,160,48,0.3);
+  }
+
+  .title-sub {
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--gold-deep);
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    margin-top: 10px;
+  }
+
+  .cover-rule {
+    width: 180px;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--gold), transparent);
+    margin: 18px auto;
+  }
+
+  .cover-flavour {
+    font-style: italic;
+    font-size: 17px;
+    color: var(--ink-light);
+    max-width: 480px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  /* ── SECTIONS ── */
+  .section {
+    margin-bottom: 44px;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+
+  .section-num {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--gold-deep);
+    letter-spacing: 2px;
+    white-space: nowrap;
+  }
+
+  h2 {
+    font-family: 'Cinzel', serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--ink-mid);
+    letter-spacing: 1px;
+    white-space: nowrap;
+  }
+
+  .header-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, var(--gold-deep), transparent);
+  }
+
+  h3 {
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink-light);
+    letter-spacing: 1.5px;
+    margin: 22px 0 8px;
+    text-transform: uppercase;
+  }
+
+  p {
+    font-size: 17px;
+    line-height: 1.75;
+    color: var(--ink);
+    margin-bottom: 12px;
+  }
+
+  p:last-child { margin-bottom: 0; }
+
+  strong {
+    font-weight: 600;
+    color: var(--ink-mid);
+  }
+
+  em { font-style: italic; }
+
+  /* ── CALLOUT BOX ── */
+  .callout {
+    background: var(--parchment-dark);
+    border: 1.5px solid var(--gold-deep);
+    border-left: 4px solid var(--gold);
+    padding: 14px 18px;
+    margin: 16px 0;
+    font-size: 16px;
+    line-height: 1.7;
+  }
+
+  .callout-title {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--gold-deep);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  /* ── BOARD DIAGRAM ── */
+  .board-diagram {
+    margin: 20px 0;
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .board-svg-wrap {
+    flex-shrink: 0;
+  }
+
+  .board-legend {
+    flex: 1;
+    min-width: 180px;
+    font-size: 15px;
+    line-height: 1.8;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+
+  .legend-swatch {
+    width: 18px;
+    height: 18px;
+    border-radius: 3px;
+    flex-shrink: 0;
+    border: 1.5px solid var(--gold-deep);
+  }
+
+  /* ── UNIT ROSTER ── */
+  .unit-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-top: 16px;
+  }
+
+  .unit-card {
+    background: var(--parchment-mid);
+    border: 1.5px solid var(--border);
+    padding: 13px 15px;
+    position: relative;
+  }
+
+  .unit-card::before {
+    content: '';
+    position: absolute;
+    top: 3px; left: 3px; right: 3px; bottom: 3px;
+    border: 0.5px solid rgba(160,120,32,0.3);
+    pointer-events: none;
+  }
+
+  .unit-header {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 5px;
+  }
+
+  .unit-icon {
+    font-size: 18px;
+    line-height: 1;
+  }
+
+  .unit-name {
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink-mid);
+    letter-spacing: 0.5px;
+  }
+
+  .unit-tag {
+    font-size: 10px;
+    font-family: 'Cinzel', serif;
+    color: var(--gold-deep);
+    letter-spacing: 1px;
+    margin-left: auto;
+    white-space: nowrap;
+  }
+
+  .unit-ability {
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--ink-light);
+    font-style: italic;
+  }
+
+  .unit-ability strong {
+    font-style: normal;
+    color: var(--ink-mid);
+  }
+
+  /* ── ROYALS CARD ── */
+  .unit-card.royal {
+    border-color: var(--gold);
+    background: linear-gradient(135deg, var(--parchment-mid), #EDE3C0);
+  }
+
+  .unit-card.royal .unit-name { color: var(--red); }
+
+  /* ── SPECIAL SQUARES TABLE ── */
+  .squares-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+    font-size: 16px;
+  }
+
+  .squares-table th {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    color: var(--gold-deep);
+    text-align: left;
+    padding: 7px 12px;
+    border-bottom: 1.5px solid var(--gold-deep);
+    background: var(--parchment-dark);
+  }
+
+  .squares-table td {
+    padding: 8px 12px;
+    border-bottom: 0.5px solid rgba(160,120,32,0.3);
+    line-height: 1.5;
+    vertical-align: top;
+  }
+
+  .squares-table tr:last-child td { border-bottom: none; }
+  .squares-table tr:nth-child(even) td { background: rgba(200,160,48,0.05); }
+
+  .sq-icon { font-size: 18px; }
+
+  /* ── TURN FLOW ── */
+  .turn-flow {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin: 16px 0;
+    position: relative;
+  }
+
+  .turn-step {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    position: relative;
+    padding-bottom: 18px;
+  }
+
+  .turn-step:last-child { padding-bottom: 0; }
+
+  .turn-step::before {
+    content: '';
+    position: absolute;
+    left: 16px;
+    top: 34px;
+    bottom: 0;
+    width: 1px;
+    background: var(--gold-deep);
+    opacity: 0.4;
+  }
+
+  .turn-step:last-child::before { display: none; }
+
+  .step-num {
+    width: 33px;
+    height: 33px;
+    border: 1.5px solid var(--gold-deep);
+    background: var(--parchment-dark);
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink-mid);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .step-body { flex: 1; padding-top: 5px; }
+  .step-title {
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink-mid);
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+  .step-desc { font-size: 16px; line-height: 1.65; color: var(--ink); }
+
+  /* ── DIVIDER ── */
+  .divider {
+    text-align: center;
+    color: var(--gold);
+    font-size: 12px;
+    letter-spacing: 10px;
+    margin: 36px 0;
+    position: relative;
+  }
+
+  .divider::before, .divider::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 30%;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--gold-deep));
+  }
+  .divider::before { left: 0; }
+  .divider::after { right: 0; background: linear-gradient(to left, transparent, var(--gold-deep)); }
+
+  .counsel-list {
+    margin: 8px 0 0 18px;
+    padding: 0;
+  }
+  .counsel-list li {
+    font-size: 16px;
+    line-height: 1.7;
+    color: var(--ink);
+    margin-bottom: 6px;
+  }
+  .counsel-list li:last-child { margin-bottom: 0; }
+
+  /* ── FOOTER ── */
+  .booklet-footer {
+    text-align: center;
+    padding: 24px 0 12px;
+    border-top: 1px solid rgba(160,120,32,0.4);
+    margin-top: 48px;
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    color: var(--gold-deep);
+    letter-spacing: 3px;
+  }
+
+  /* small screen */
+  @media (max-width: 600px) {
+    .content { padding: 40px 28px; }
+    .title { font-size: 30px; }
+    .unit-grid { grid-template-columns: 1fr; }
+    .board-diagram { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<div class="booklet">
+
+  <!-- Corner ornaments -->
+  <div class="corner tl">
+    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M4 44 L4 4 L44 4" stroke="#A07820" stroke-width="1.5" fill="none"/>
+      <path d="M4 4 L14 14" stroke="#A07820" stroke-width="1"/>
+      <circle cx="4" cy="4" r="3" fill="#C8A030" stroke="#8A6010" stroke-width="1"/>
+      <circle cx="44" cy="4" r="2" fill="#C8A030" stroke="#8A6010" stroke-width="0.8"/>
+      <circle cx="4" cy="44" r="2" fill="#C8A030" stroke="#8A6010" stroke-width="0.8"/>
+      <path d="M10 4 Q4 10 4 10" stroke="#C8A030" stroke-width="0.8" fill="none"/>
+    </svg>
+  </div>
+  <div class="corner tr">
+    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M4 44 L4 4 L44 4" stroke="#A07820" stroke-width="1.5" fill="none"/>
+      <path d="M4 4 L14 14" stroke="#A07820" stroke-width="1"/>
+      <circle cx="4" cy="4" r="3" fill="#C8A030" stroke="#8A6010" stroke-width="1"/>
+      <circle cx="44" cy="4" r="2" fill="#C8A030" stroke="#8A6010" stroke-width="0.8"/>
+      <circle cx="4" cy="44" r="2" fill="#C8A030" stroke="#8A6010" stroke-width="0.8"/>
+    </svg>
+  </div>
+  <div class="corner bl">
+    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M4 44 L4 4 L44 4" stroke="#A07820" stroke-width="1.5" fill="none"/>
+      <path d="M4 4 L14 14" stroke="#A07820" stroke-width="1"/>
+      <circle cx="4" cy="4" r="3" fill="#C8A030" stroke="#8A6010" stroke-width="1"/>
+      <circle cx="44" cy="4" r="2" fill="#C8A030" stroke="#8A6010" stroke-width="0.8"/>
+      <circle cx="4" cy="44" r="2" fill="#C8A030" stroke="#8A6010" stroke-width="0.8"/>
+    </svg>
+  </div>
+  <div class="corner br">
+    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M4 44 L4 4 L44 4" stroke="#A07820" stroke-width="1.5" fill="none"/>
+      <path d="M4 4 L14 14" stroke="#A07820" stroke-width="1"/>
+      <circle cx="4" cy="4" r="3" fill="#C8A030" stroke="#8A6010" stroke-width="1"/>
+      <circle cx="44" cy="4" r="2" fill="#C8A030" stroke="#8A6010" stroke-width="0.8"/>
+      <circle cx="4" cy="44" r="2" fill="#C8A030" stroke="#8A6010" stroke-width="0.8"/>
+    </svg>
+  </div>
+
+  <div class="content">
+
+    <!-- COVER -->
+    <div class="cover">
+      <span class="cover-crest">⚔</span>
+      <div class="title">Royal Convoy</div>
+      <div class="title-sub">Rules of Engagement</div>
+      <div class="cover-rule"></div>
+      <p class="cover-flavour"><em>Two rival kingdoms. One perilous road. Only one convoy will reach the Royal Tourney in time.</em></p>
+    </div>
+
+
+    <!-- I. THE BACKSTORY -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">I</span>
+        <h2>The Road to the Tourney</h2>
+        <div class="header-line"></div>
+      </div>
+      <p>Once a generation, the greatest kingdoms of the realm are summoned to the <strong>Royal Tourney</strong> — a grand tournament of arms, honour, and spectacle held at the neutral city of Valdenmoor. To be represented at the Tourney is a matter of immense prestige. To arrive without your Royals is a disgrace that echoes through the ages.</p>
+      <p>Two rival kingdoms have set out along the same ancient road through the wilderness — and they <em>despise</em> each other. Old grudges, disputed borders, and a century of bad blood have made this convoy as dangerous as any battlefield. Both sides know that if the other's Royals fail to arrive, their own claim to glory is uncontested.</p>
+      <p>And so the order has been given: <strong>reach the Royal Tourney at all costs — and make sure the enemy does not.</strong></p>
+
+    </div>
+
+    <div class="divider">✦</div>
+
+    <!-- II. THE QUEST -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">II</span>
+        <h2>The Quest</h2>
+        <div class="header-line"></div>
+      </div>
+      <p>Royal Convoy is a two-player strategy game of escort, ambush, and fortune. Each player commands a convoy of ten units — soldiers, scouts, and specialists — charged with one sacred duty: guide your <strong>King</strong> and <strong>Queen</strong> safely across a dangerous kingdom to the Royal Tourney on the far side of the board.</p>
+      <p>The player who escorts <strong>both their Royals to the Royal Tourney first</strong> wins the game. Your non-Royal units can also make the crossing — earning them glory and a second chance at life — but the Royals are all that matter for victory.</p>
+    </div>
+
+    <div class="divider">✦</div>
+
+
+    <div class="divider">✦</div>
+
+    <!-- III. THE KINGDOM (BOARD) -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">III</span>
+        <h2>The Kingdom</h2>
+        <div class="header-line"></div>
+      </div>
+      <p>The board is a <strong>5-column, 16-row</strong> map of the kingdom — not every square is passable. Most of the terrain is shared open ground, but each player has a small number of <strong>private squares</strong> which the enemy cannot enter.</p>
+      <p>Movement flows downward (toward the tourney). Units cannot move upward, with the exception of the Thief unit.</p>
+
+      <h3>Special Squares</h3>
+      <table class="squares-table">
+        <thead>
+          <tr>
+            <th>Square</th>
+            <th>Name</th>
+            <th>Effect</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="sq-icon">🏰</span></td>
+            <td><strong>Castle</strong></td>
+            <td>Units sheltering inside are <em>protected from capture</em> — except by the Siege.</td>
+          </tr>
+          <tr>
+            <td><span class="sq-icon">🎲</span></td>
+            <td><strong>Roll Again</strong></td>
+            <td>Landing here immediately grants you another roll and another move this turn.</td>
+          </tr>
+          <tr>
+            <td><span class="sq-icon">💰</span></td>
+            <td><strong>Gold Coin</strong></td>
+            <td>Landing here adds 1 coin to your treasury (2 for the Merchant).</td>
+          </tr>
+          <tr>
+            <td><span class="sq-icon">🎪</span></td>
+            <td><strong>Royal Tourney</strong></td>
+            <td>Your Royals must reach <em>their own</em> tourney square to win. Non-Royal units who arrive gain a life and return to the home castle.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="divider">✦</div>
+
+
+    <!-- IV. YOUR FORCES -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">IV</span>
+        <h2>Your Forces</h2>
+        <div class="header-line"></div>
+      </div>
+      <p>Each player commands <strong>ten units</strong>. All begin at the <strong>home castle</strong> (off the board) and must be deployed by rolling dice and moving them onto the board from your starting square. Each unit has its own movement rules and special abilities.</p>
+
+      <h3>Lives</h3>
+      <p>Most non-Royal units carry <strong>two lives</strong> (shown as a Roman numeral badge: <strong>I</strong>, <strong>II</strong>, <strong>III</strong>). When captured they lose a life — reaching zero means <strong>permanent elimination</strong> (💀). The Soldier has unlimited lives and can never be permanently eliminated.</p>
+      <p>When a non-Royal unit reaches the Royal Tourney they <strong>gain one life</strong> (up to a maximum of three) and return to the home castle, ready to deploy again.</p>
+
+      <h3>Kingsguard</h3>
+      <p>The <strong>Knight, Shield, Siege, Archer, Sword,</strong> and <strong>Soldier</strong> are Kingsguard units. Any Royal standing <em>orthogonally adjacent</em> to a friendly Kingsguard unit is <strong>protected</strong> — the enemy cannot capture them while that guard is in place.</p>
+
+      <div class="unit-grid">
+
+        <div class="unit-card royal">
+          <div class="unit-header">
+            <span class="unit-icon">🤴</span>
+            <span class="unit-name">King</span>
+            <span class="unit-tag">ROY · KGSRD</span>
+          </div>
+          <div class="unit-ability"><strong>−1 step.</strong> Moves one step fewer than the dice roll. Protected while adjacent to a Kingsguard. Must reach the Royal Tourney to win. <strong>Capturing a Royal seizes 2 coins</strong> from the enemy treasury.</div>
+        </div>
+
+        <div class="unit-card royal">
+          <div class="unit-header">
+            <span class="unit-icon">👸</span>
+            <span class="unit-name">Queen</span>
+            <span class="unit-tag">ROY · KGSRD</span>
+          </div>
+          <div class="unit-ability"><strong>−1 step.</strong> Same rules as the King. Both Royals must reach the Royal Tourney to claim victory. <strong>Capturing a Royal seizes 2 coins</strong> from the enemy treasury.</div>
+        </div>
+
+        <div class="unit-card">
+          <div class="unit-header">
+            <span class="unit-icon">🐴</span>
+            <span class="unit-name">Knight</span>
+            <span class="unit-tag">KGSRD</span>
+          </div>
+          <div class="unit-ability"><strong>+2 steps.</strong> Moves two steps more than the dice roll. Can reach the Royal Tourney without an exact count — generous arrival.</div>
+        </div>
+
+        <div class="unit-card">
+          <div class="unit-header">
+            <span class="unit-icon">🛡️</span>
+            <span class="unit-name">Shield</span>
+            <span class="unit-tag">KGSRD</span>
+          </div>
+          <div class="unit-ability"><strong>Absorbs first hit.</strong> The first melee strike against the Shield cracks it rather than capturing it. A cracked Shield can be captured normally on the next hit. <em>Note: the Shield does not crack from an Archer attack — ranged arrows pass it by entirely.</em></div>
+        </div>
+
+        <div class="unit-card">
+          <div class="unit-header">
+            <span class="unit-icon">⚙️</span>
+            <span class="unit-name">Siege</span>
+            <span class="unit-tag">KGSRD</span>
+          </div>
+          <div class="unit-ability"><strong>Storms castles.</strong> The only unit that can capture an enemy sheltering inside a castle. Standard melee otherwise.</div>
+        </div>
+
+        <div class="unit-card">
+          <div class="unit-header">
+            <span class="unit-icon">🗡️</span>
+            <span class="unit-name">Thief</span>
+            <span class="unit-tag"></span>
+          </div>
+          <div class="unit-ability"><strong>Moves upward.</strong> Uniquely, the Thief can move toward <em>your own</em> end of the board. On capture, <strong>steals 1 coin</strong> from the enemy treasury.</div>
+        </div>
+
+        <div class="unit-card">
+          <div class="unit-header">
+            <span class="unit-icon">🏹</span>
+            <span class="unit-name">Archer</span>
+            <span class="unit-tag">KGSRD</span>
+          </div>
+          <div class="unit-ability"><strong>Range-1 kill.</strong> On landing, the Archer slays all enemies on orthogonally adjacent squares — without moving onto their square. Castle and guard protection apply. Must land on an empty square. <em>Note: the Archer's arrows do not crack a Shield.</em></div>
+        </div>
+
+        <div class="unit-card">
+          <div class="unit-header">
+            <span class="unit-icon">🤠</span>
+            <span class="unit-name">Merchant</span>
+            <span class="unit-tag"></span>
+          </div>
+          <div class="unit-ability"><strong>Earns gold.</strong> +1 coin on a castle, +2 coins on a gold coin square. Can share a square with any one unit — friend <em>or</em> foe. Cannot spend coins to move.</div>
+        </div>
+
+        <div class="unit-card">
+          <div class="unit-header">
+            <span class="unit-icon">⚔️</span>
+            <span class="unit-name">Sword</span>
+            <span class="unit-tag">KGSRD</span>
+          </div>
+          <div class="unit-ability"><strong>Chain attack.</strong> Capturing with the Sword triggers a Chain — any subsequent kill by <em>any</em> unit that same turn continues the chain, granting another roll until a turn ends without a kill.</div>
+        </div>
+
+        <div class="unit-card">
+          <div class="unit-header">
+            <span class="unit-icon">🚶</span>
+            <span class="unit-name">Soldier</span>
+            <span class="unit-tag">KGSRD</span>
+          </div>
+          <div class="unit-ability"><strong>Unlimited lives.</strong> The Soldier cannot be permanently eliminated — no matter how many times captured, they return to the home castle. Standard movement.</div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="divider">✦</div>
+
+
+    <!-- V. THE DICE -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">V</span>
+        <h2>The Dice</h2>
+        <div class="header-line"></div>
+      </div>
+      <p>Royal Convoy uses <strong>two custom dice</strong>, each showing the values <strong>0, 1, 1, 2, 2, 3</strong>. On your turn you roll both and move one unit a number of steps equal to their combined total — between 0 and 6.</p>
+      <p>On the <strong>very first turn</strong> of the game (whoever goes first), only <strong>one die</strong> is rolled. This opening roll is a maximum of 3 steps.</p>
+
+      <div class="callout">
+        <div class="callout-title">⚔ Spending Gold</div>
+        Instead of rolling, you may spend coins from your treasury to move a unit <strong>1 step per coin</strong>. Royals and the Merchant cannot benefit from coin spending. This is your only way to guarantee a specific move — use it wisely.
+      </div>
+    </div>
+
+    <div class="divider">✦</div>
+
+
+    <!-- VI. A TURN -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">VI</span>
+        <h2>Your Turn</h2>
+        <div class="header-line"></div>
+      </div>
+      <p>Players alternate turns. On your turn, follow these steps:</p>
+
+      <div class="turn-flow">
+        <div class="turn-step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <div class="step-title">Roll or Spend</div>
+            <div class="step-desc">Roll both dice (or spend gold coins instead). Your total is the number of steps you have to spend this move.</div>
+          </div>
+        </div>
+        <div class="turn-step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <div class="step-title">Choose a Unit</div>
+            <div class="step-desc">Select any of your units — on the board or still at the home castle. Units at the home castle deploy from your starting square, spending their first step to enter the road. Once you select a unit, all valid destination squares are <strong>highlighted in blue</strong> on the board.</div>
+          </div>
+        </div>
+        <div class="turn-step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <div class="step-title">Move</div>
+            <div class="step-desc">Move your chosen unit exactly the number of steps indicated (unless it's a Knight, who gets +2, or a Royal, who gets −1). You may not reverse direction mid-move.</div>
+          </div>
+        </div>
+        <div class="turn-step">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <div class="step-title">Resolve Landing</div>
+            <div class="step-desc">Apply whatever effect the destination square has — capture an enemy, collect a coin, roll again, or shelter in a castle.</div>
+          </div>
+        </div>
+        <div class="turn-step">
+          <div class="step-num">5</div>
+          <div class="step-body">
+            <div class="step-title">Pass the Turn</div>
+            <div class="step-desc">Your turn ends. If you rolled a 0 or had no valid moves, your turn passes automatically.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider">✦</div>
+
+
+    <!-- VII. COMBAT -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">VII</span>
+        <h2>Combat</h2>
+        <div class="header-line"></div>
+      </div>
+      <p>Most units capture by <strong>landing on an enemy's square</strong>. The captured unit is sent back to the home castle and loses one life. At zero lives, the unit is permanently eliminated.</p>
+
+      <h3>Restrictions</h3>
+      <p>You <strong>cannot</strong> capture a unit sheltering in a castle (unless you are the Siege). You <strong>cannot</strong> capture a Royal that is adjacent to an enemy Kingsguard unit — they are protected. You cannot land on a square occupied by your own units (unless you are the Merchant, who may share with anyone).</p>
+
+      <h3>Capturing Royals</h3>
+      <p>When a Royal is captured the attacker <strong>seizes 1 coin</strong> from the enemy treasury. However, Royals can only be captured when they have no adjacent Kingsguard. A well-escorted Royal is effectively untouchable.</p>
+
+      <h3>The Shield's Defence</h3>
+      <p>The first <em>melee</em> attack against a Shield unit <strong>cracks it</strong> rather than capturing it. The Shield stays on the board, now vulnerable. A second hit captures it normally. A Shield that returns to the home castle resets to full strength. Note that the Archer's ranged attack does not crack the Shield.</p>
+
+      <div class="callout">
+        <div class="callout-title">⚔ Chain Attack</div>
+        When the <strong>Sword</strong> makes a capture, it triggers a <em>Chain</em>. While a Chain is active, any capture by <em>any unit</em> grants you another roll and another move. The chain continues until a turn passes with no kill.
+      </div>
+    </div>
+
+    <div class="divider">✦</div>
+
+
+    <!-- VIII. THE LONG ROAD HOME -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">VIII</span>
+        <h2>The Long Road Home</h2>
+        <div class="header-line"></div>
+      </div>
+      <p>War takes its toll. When a unit is captured or completes the crossing to the Royal Tourney, it cannot immediately return to the road — it must first recover or make the long journey back to the home castle.</p>
+      <p>Any unit that is <strong>captured</strong> must rest and tend to its wounds. Any non-Royal unit that <strong>reaches the Royal Tourney</strong> must journey all the way back before it can ride out again. In both cases, the unit is placed in the home castle and must <strong>wait four of your own turns</strong> before it may re-enter the road.</p>
+      <p>While a unit is resting, a <strong>countdown number</strong> is shown over its portrait in the home castle — ticking down from 4 to 1 each turn. When the counter disappears, the unit is ready to march again.</p>
+
+      <div class="callout">
+        <div class="callout-title">⚜ Note on the Soldier</div>
+        The Soldier's boundless courage means they can never be permanently eliminated — but even the Soldier needs four turns to recover from capture before returning to the fray.
+      </div>
+    </div>
+
+    <div class="divider">✦</div>
+
+
+    <!-- IX. WINNING -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">IX</span>
+        <h2>Victory</h2>
+        <div class="header-line"></div>
+      </div>
+      <p>The game ends the moment a player escorts <strong>both their King and Queen</strong> to the Royal Tourney. That player wins — their Royals arrive in glory, and the rival kingdom's claim to the tourney is dust.</p>
+      <p>Non-Royal units that reach the Royal Tourney <strong>return to the home castle</strong> with a bonus life (maximum three) after their four-turn rest. Sending non-Royal units ahead is never wasted — it builds resilience for the escorts who guard your Royals.</p>
+      <p>There is no draw condition. Convoys reach the tourney, or they fall.</p>
+
+      <div class="callout">
+        <div class="callout-title">⚜ Counsel for New Commanders</div>
+        <ul class="counsel-list">
+          <li>Protect your Royals above all else — keep Kingsguard adjacent to them at all times.</li>
+          <li>Guard your Siege carefully; it is the <em>only</em> unit that can storm a castle, and once lost, any enemy who shelters inside is beyond your reach.</li>
+          <li>Consider holding your Royals at the home castle in the early going — clearing enemy units from the road first can make the Royal crossing far safer.</li>
+          <li>Use the Merchant to build your treasury, then spend coins at decisive moments.</li>
+          <li>Castle squares are your best shelter when under threat — seek them out with your key units.</li>
+          <li>Never underestimate the Soldier — they cannot be removed from the field permanently.</li>
+        </ul>
+      </div>
+    </div>
+
+
+    <!-- FOOTER -->
+    <div class="booklet-footer">
+      ✦ &nbsp; Royal Convoy &nbsp; ✦ &nbsp; Rules of Engagement &nbsp; ✦
+    </div>
+
+  </div><!-- .content -->
+</div><!-- .booklet -->
+
+</body>
+</html>
