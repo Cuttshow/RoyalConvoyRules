@@ -4226,10 +4226,15 @@ function _getDailyDateKey(){
 }
 
 function _getDailyMapForDate(dateKey){
-  // Simple hash of the date string → index into MAPS
+  // ── TESTING OVERRIDE: force map6 for today ──
+  var todayKey = _getDailyDateKey();
+  if(dateKey === todayKey){
+    var map6 = MAPS.find(function(m){ return m.id === 'map6'; });
+    if(map6) return map6;
+  }
+  // Normal rotation: simple hash of the date string → index into MAPS
   var hash = 0;
   for(var i=0;i<dateKey.length;i++) hash = (hash*31 + dateKey.charCodeAt(i)) & 0xFFFFFF;
-  // Only use named, non-test maps (first 5 are the "real" ones, skip map6 test map)
   var eligibleMaps = MAPS.filter(function(m){ return m.id !== 'map6'; });
   return eligibleMaps[Math.abs(hash) % eligibleMaps.length];
 }
@@ -4349,28 +4354,23 @@ function startDailyChallenge(){
 
 // ── Hook into endGame to detect daily win/loss ──
 var _origEndGameDaily = null;
+var _dailySavePromise = null;
 (function(){
-  // We patch endGame after definition — use a polling approach since endGame is
-  // declared in the same script block, so it's available immediately
   var _origEG = endGame;
   endGame = function(pid){
     _origEG.apply(this, arguments);
     if(_dailyMode){
       _dailyWon = (pid === 0);
       _dailyTurnCount = G.hN;
-      if(_dailyWon){
-        _saveDailyScore();
-      } else {
-        // Lost — still record as DNF so they can't re-attempt
-        _saveDailyScore(true);
-      }
+      // Save score and store the promise so closeStats can wait for it
+      _dailySavePromise = _saveDailyScore(pid !== 0);
     }
   };
 })();
 
 // ── Save daily score to Firebase ──
 function _saveDailyScore(dnf){
-  if(!_dailyMode || !_dailyPlayerName) return;
+  if(!_dailyPlayerName) return Promise.resolve();
   var safeKey = _dailyPlayerName.replace(/[^a-zA-Z0-9_\-]/g,'_');
   var entry = {
     name: _dailyPlayerName,
@@ -4381,15 +4381,22 @@ function _saveDailyScore(dnf){
     kingdom: _p1K ? _p1K.short : '',
     ts: Date.now()
   };
-  _fbWrap(function(){
-    var ref = window._fbRef(window._fbDb, 'daily/'+_dailyDateKey+'/scores/'+safeKey);
-    window._fbSet(ref, entry).then(function(){
-      if(!dnf){
-        var banner = document.getElementById('daily-saved-banner');
-        banner.classList.add('show');
-        setTimeout(function(){ banner.classList.remove('show'); }, 2600);
-      }
-    }).catch(function(e){ console.warn('Daily save error:', e); });
+  return new Promise(function(resolve){
+    _fbWrap(function(){
+      var ref = window._fbRef(window._fbDb, 'daily/'+_dailyDateKey+'/scores/'+safeKey);
+      window._fbSet(ref, entry).then(function(){
+        console.log('[Daily] Score saved successfully:', entry);
+        if(!dnf){
+          var banner = document.getElementById('daily-saved-banner');
+          banner.classList.add('show');
+          setTimeout(function(){ banner.classList.remove('show'); }, 2600);
+        }
+        resolve();
+      }).catch(function(e){
+        console.warn('[Daily] Score save FAILED:', e.message || e);
+        resolve(); // still resolve so the flow continues
+      });
+    });
   });
 }
 
@@ -4397,11 +4404,17 @@ function _saveDailyScore(dnf){
 var _origCloseStats = closeStats;
 closeStats = function(){
   if(_dailyMode){
+    var savedDateKey = _dailyDateKey; // preserve before clearing
     _dailyMode = false;
     document.getElementById('daily-game-indicator').classList.remove('show');
     document.getElementById('stats-screen').style.display='none';
-    // Show leaderboard
-    viewDailyLeaderboard();
+    // Wait for the Firebase save to finish before loading the leaderboard
+    var p = _dailySavePromise || Promise.resolve();
+    _dailySavePromise = null;
+    p.then(function(){
+      _dailyDateKey = savedDateKey; // restore so leaderboard can use it
+      viewDailyLeaderboard();
+    });
   } else {
     _origCloseStats.apply(this, arguments);
   }
@@ -4427,8 +4440,10 @@ function viewDailyLeaderboard(){
     window._fbGet(ref).then(function(snapshot){
       var data = snapshot.val();
       _renderLeaderboard(data, dateKey);
-    }).catch(function(){
-      document.getElementById('lb-table-wrap').innerHTML = '<div style="font-family:Georgia,serif;font-size:12px;color:#AA3A2A;padding:16px">Could not load leaderboard.</div>';
+    }).catch(function(e){
+      console.warn('[Daily] Leaderboard fetch FAILED:', e && (e.message || e));
+      var errMsg = e && e.message ? (' ('+e.message+')') : '';
+      document.getElementById('lb-table-wrap').innerHTML = '<div style="font-family:Georgia,serif;font-size:12px;color:#AA3A2A;padding:16px">Could not load leaderboard'+errMsg+'.<br><span style="font-size:10px;color:#8A6030">Check browser console for details. This is often a Firebase security rules issue — make sure your Realtime Database rules allow read/write on the <code>daily/</code> path.</span></div>';
     });
   });
 }
